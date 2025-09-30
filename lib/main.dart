@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'app_colors.dart';
 import 'speak_page.dart';
-import 'behavior_page.dart';
-import 'learn_page.dart';
 
 void main() => runApp(const AutismDemoApp());
 
@@ -72,7 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ],
                     ),
-                    
+
                     const Spacer(),
                     // 右边：people 图标
                     Icon(
@@ -237,14 +235,11 @@ class _DomainGrid extends StatelessWidget {
   final List<_Domain> domains = [
     _Domain('Leisure', Icons.toys),
     _Domain('Listen', Icons.psychology_alt_outlined), // 原 Receptive Language
-    _Domain('Speak', Icons.chat_bubble_outline,
-        builder: (_) => const SpeakPage()), // 原 Expressive Language // 原 Expressive Language
+    _Domain('Speak', Icons.chat_bubble_outline), // 原 Expressive Language
     _Domain('Emotion', Icons.emoji_emotions_outlined),
     _Domain('Social', Icons.group_outlined),
-    _Domain('Learn', Icons.menu_book_outlined,
-        builder: (_) => const LearnPage()), // 原 Learning Skills
-    _Domain('Behavior', Icons.account_box_outlined,
-        builder: (_) => const BehaviorPage()),
+    _Domain('Learn', Icons.menu_book_outlined), // 原 Learning Skills
+    _Domain('Behavior', Icons.account_box_outlined),
     _Domain('Gross\nMotor', Icons.directions_run),
     _Domain('Fine\nMotor', Icons.keyboard_alt_outlined),
   ];
@@ -276,12 +271,10 @@ class _DomainTile extends StatelessWidget {
 
     return GestureDetector(
       onTap: () {
-        if (domain.builder != null) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: domain.builder!),
-          );
-        }
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const SpeakPage()),
+        );
       },
       child: Stack(
         children: [
@@ -352,8 +345,8 @@ class _DomainTitle extends StatelessWidget {
 
 class _Domain {
   final String title;
-  final WidgetBuilder? builder;
-  const _Domain(this.title, this.icon, {this.builder});
+  final IconData icon;
+  const _Domain(this.title, this.icon);
 }
 
 class _ListCard extends StatelessWidget {
