@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'app_colors.dart';
+import '../app_colors.dart';
+import 'describe_size_page.dart';
 
 enum Difficulty { beginner, middle, advanced }
 
@@ -22,6 +23,7 @@ class _BehaviorPageState extends State<BehaviorPage> {
       'Create a cozy spot with sensory toys. Practice going there together, taking deep breaths, and squeezing a fidget.',
       icon: Icons.weekend_outlined,
       difficulty: Difficulty.beginner,
+      builder: (_) => const DescribeSizePage(),
     ),
     Activity(
       title: 'Hands to Myself',
@@ -238,7 +240,7 @@ class ActivityCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final card = Container(
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -298,6 +300,20 @@ class ActivityCard extends StatelessWidget {
         ],
       ),
     );
+    if (activity.builder == null) {
+      return card;
+    }
+
+    return GestureDetector(
+      onTap: () {
+        final builder = activity.builder!;
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: builder),
+        );
+      },
+      child: card,
+    );
   }
 }
 
@@ -353,6 +369,7 @@ class Activity {
   final String description;
   final IconData icon;
   final Difficulty difficulty;
+  final WidgetBuilder? builder;
 
   Activity({
     required this.title,
@@ -361,5 +378,6 @@ class Activity {
     required this.description,
     required this.icon,
     required this.difficulty,
+    this.builder,
   });
 }

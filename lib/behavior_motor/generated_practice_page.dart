@@ -1,12 +1,12 @@
 // lib/generated_practice_page.dart
 import 'package:flutter/material.dart';
-import 'app_colors.dart';
+import '../app_colors.dart';
 
 class GeneratedPracticePage extends StatefulWidget {
   const GeneratedPracticePage({
     super.key,
     required this.imagePath,
-    this.title = 'Big vs Small Match', // 可自定义练习名称
+    this.title = 'Calming Corner Routine', // 可自定义练习名称
   });
 
   final String imagePath;
@@ -23,35 +23,34 @@ class _GeneratedPracticePageState extends State<GeneratedPracticePage> {
   // 步骤与道具呼应 (7步流程)
   late final List<_StepItem> _steps = [
     _StepItem(
-      title: 'Set up',
+      title: 'Prepare space',
       text:
-      'Place all props (cups, toys, paper roll) on the table in mixed order. Keep one big/small pair visible.',
-      tip: 'Say: “We will find BIG and SMALL today!”',
+      'Place a soft mat, pillows, and a few calm tools (squeeze ball, picture book) in the corner. Dim lights if possible.',
+      tip: 'Say: “This is our calm-down spot when we need a break.”',
     ),
     _StepItem(
-      title: 'Introduce',
+      title: 'Introduce tools',
       text:
-      'Show each object briefly. Point to one cup and say: “This is BIG.” Point to the other: “This is SMALL.”',
-      tip:
-      'Use clear hand gestures: wide arms for BIG, pinch fingers for SMALL.',
+      'Show each calming item and model how to use it (hug the pillow, squeeze the ball, flip through the book slowly).',
+      tip: 'Let the child touch each tool and choose a favorite.',
     ),
     _StepItem(
-      title: 'Model & label',
+      title: 'Practice calm breathing',
       text:
-      'Pick up the big cup and say “big cup. Then the small cup: “small cup. Repeat with cups or toys.',
-      tip: 'Encourage your child to echo your words.',
+      'Sit together in the corner. Model 3 slow breaths while holding the tool. Count or trace shapes with your finger.',
+      tip: 'Use gentle voice cues like “Breathe in… breathe out.”',
     ),
     _StepItem(
-      title: 'Match pairs',
+      title: 'Role-play break time',
       text:
-      'Place the big cup and small cup together. Ask: “Which is BIG? Which is SMALL?” Do the same for toys.',
-      tip: 'Wait for your child’s response before confirming.',
+      'Pretend there was a big feeling. Prompt: “Let’s take a calm break.” Walk to the corner and practice the routine.',
+      tip: 'Reinforce: “Great job choosing your calm tools!”',
     ),
     _StepItem(
       title: 'Review & praise',
       text:
-      'Go over each group again, repeating the labels. End with clapping or high-fives to celebrate success.',
-      tip: 'Say: “Great job! You found BIG and SMALL!”',
+      'Ask the child which tool helped. Decide together when to use the corner next time and end with praise or a hug.',
+      tip: 'Keep a picture reminder near the space.',
     ),
   ];
 

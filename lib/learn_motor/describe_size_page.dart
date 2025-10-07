@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'app_colors.dart';
+import '../app_colors.dart';
 import 'generated_practice_page.dart';
 
 class DescribeSizePage extends StatefulWidget {
@@ -83,7 +83,7 @@ class _DescribeSizePageState extends State<DescribeSizePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Describe Size"),
+        title: const Text("Sort by Size"),
         centerTitle: true,
         backgroundColor: Colors.white,
         surfaceTintColor: Colors.white,
@@ -122,8 +122,8 @@ class _DescribeSizePageState extends State<DescribeSizePage> {
                     ),
                     SizedBox(height: 6),
                     Text(
-                      'Guide the child to label “big” vs “small” with real objects '
-                          '(big ball / small ball). Builds comparative vocabulary.',
+                      'Guide the child to label and sort objects by size ('
+                          'big vs small) using favorite toys to build comparison vocabulary.',
                       style: TextStyle(fontSize: 14, height: 1.3),
                     ),
                   ],

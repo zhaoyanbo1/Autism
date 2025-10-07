@@ -1,12 +1,12 @@
 // lib/generated_practice_page.dart
 import 'package:flutter/material.dart';
-import 'app_colors.dart';
+import '../app_colors.dart';
 
 class GeneratedPracticePage extends StatefulWidget {
   const GeneratedPracticePage({
     super.key,
     required this.imagePath,
-    this.title = 'Big vs Small Match', // 可自定义练习名称
+    this.title = 'Color learning Practice',// 可自定义练习名称
   });
 
   final String imagePath;
@@ -25,33 +25,33 @@ class _GeneratedPracticePageState extends State<GeneratedPracticePage> {
     _StepItem(
       title: 'Set up',
       text:
-      'Place all props (cups, toys, paper roll) on the table in mixed order. Keep one big/small pair visible.',
-      tip: 'Say: “We will find BIG and SMALL today!”',
+      'Look for items with distinct colors and place them on the table',
+      tip: 'Say: “We are learning about colors today!”',
     ),
     _StepItem(
       title: 'Introduce',
       text:
-      'Show each object briefly. Point to one cup and say: “This is BIG.” Point to the other: “This is SMALL.”',
+      'Show each object briefly. Point to one cup and say: “This is yellow.” Point to the other: “This is red.”',
       tip:
-      'Use clear hand gestures: wide arms for BIG, pinch fingers for SMALL.',
+      'Use items with obvious color contrasts.',
     ),
     _StepItem(
       title: 'Model & label',
       text:
-      'Pick up the big cup and say “big cup. Then the small cup: “small cup. Repeat with cups or toys.',
+      'Pick up the yellow cup and say “yellow cup. Then the red cup: “red cup. Repeat with cups or toys.',
       tip: 'Encourage your child to echo your words.',
     ),
     _StepItem(
       title: 'Match pairs',
       text:
-      'Place the big cup and small cup together. Ask: “Which is BIG? Which is SMALL?” Do the same for toys.',
+      'Place the red cup and other color cup together. Ask: “Which is red? Which is yellow?” Do the same for toys.',
       tip: 'Wait for your child’s response before confirming.',
     ),
     _StepItem(
       title: 'Review & praise',
       text:
       'Go over each group again, repeating the labels. End with clapping or high-fives to celebrate success.',
-      tip: 'Say: “Great job! You found BIG and SMALL!”',
+      tip: 'Say: “Great job! You learned a lot colors today!”',
     ),
   ];
 
