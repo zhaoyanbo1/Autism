@@ -1,4 +1,4 @@
-import base64, os, logging
+import base64, imghdr, os, logging
 from pathlib import Path
 from typing import Optional
 
@@ -42,13 +42,18 @@ async def generate_game(
     image: UploadFile = File(...),           # ⚠️字段名必须叫 image
     instruction: Optional[str] = Form(None)  # ⚠️字段名必须叫 instruction
 ):
-    if not image.content_type or not image.content_type.startswith("image/"):
-        raise HTTPException(400, "Only image uploads are supported")
 
     raw = await image.read()
     if not raw:
         raise HTTPException(400, "Empty image upload")
+
+    detected = imghdr.what(None, raw)
+    if not detected:
+        raise HTTPException(400, "Uploaded file is not a valid image")
+
     mime = image.content_type
+    if not mime or not mime.startswith("image/"):
+            mime = f"image/{detected}"
     data_url = f"data:{mime};base64,{base64.b64encode(raw).decode()}"
 
     prompt = BASE_PROMPT + (f"\nPlease also incorporate: {instruction}" if instruction else "")
