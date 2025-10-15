@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'daily.dart';
+import 'practice/domain_ai_upload_page.dart';
 import 'firebase_options.dart';
 
 // ==== 你的登录页（纯 Flutter 版）====
@@ -17,6 +18,7 @@ import 'app_colors.dart';
 import 'speak_page.dart';
 import 'practice/category_page.dart';
 import 'personalized_upload_page.dart';
+import 'practice/domain_ai_upload_page.dart';
 import 'practice/personalized_practice_page.dart';
 
 Future<void> main() async {
@@ -293,15 +295,15 @@ class _DomainGrid extends StatelessWidget {
   const _DomainGrid({super.key});
 
   final List<_Domain> domains = const [
-    _Domain('Leisure', Icons.toys),
-    _Domain('Listen', Icons.psychology_alt_outlined),
-    _Domain('Speak', Icons.chat_bubble_outline),
-    _Domain('Emotion', Icons.emoji_emotions_outlined),
-    _Domain('Social', Icons.group_outlined),
-    _Domain('Learn', Icons.menu_book_outlined),
-    _Domain('Behavior', Icons.account_box_outlined),
-    _Domain('Gross\nMotor', Icons.directions_run),
-    _Domain('Fine\nMotor', Icons.keyboard_alt_outlined),
+    _Domain('Leisure', Icons.toys, 'Leisure'),
+    _Domain('Listen', Icons.psychology_alt_outlined, 'Listen'),
+    _Domain('Speak', Icons.chat_bubble_outline, 'Speak'),
+    _Domain('Emotion', Icons.emoji_emotions_outlined, 'Emotion'),
+    _Domain('Social', Icons.group_outlined, 'Social'),
+    _Domain('Learn', Icons.menu_book_outlined, 'Learn'),
+    _Domain('Behavior', Icons.account_box_outlined, 'Behavior'),
+    _Domain('Gross\nMotor', Icons.directions_run, 'GrossMotor'),
+    _Domain('Fine\nMotor', Icons.keyboard_alt_outlined, 'FineMotor'),
   ];
 
   @override
@@ -314,7 +316,7 @@ class _DomainGrid extends StatelessWidget {
         crossAxisCount: 3,
         crossAxisSpacing: 8,
         mainAxisSpacing: 8,
-        childAspectRatio: 1.1,
+        childAspectRatio: 0.9,
       ),
       itemBuilder: (context, i) => _DomainTile(domain: domains[i]),
     );
@@ -331,38 +333,14 @@ class _DomainTile extends StatelessWidget {
 
     return GestureDetector(
       onTap: () {
-        if (domain.title == 'Speak') {
-          Navigator.push(context,
-              MaterialPageRoute(builder: (_) => const CategoryPage(category: 'Speak')));
-        } else if (domain.title == 'Gross\nMotor') {
-          Navigator.push(context,
-              MaterialPageRoute(builder: (_) => const CategoryPage(category: 'GrossMotor')));
-        } else if (domain.title == 'Fine\nMotor') {
-          Navigator.push(context,
-              MaterialPageRoute(builder: (_) => const CategoryPage(category: 'FineMotor')));
-        } else if (domain.title == 'Leisure') {
-          Navigator.push(context,
-              MaterialPageRoute(builder: (_) => const CategoryPage(category: 'Leisure')));
-        } else if (domain.title == 'Listen') {
-          Navigator.push(context,
-              MaterialPageRoute(builder: (_) => const CategoryPage(category: 'Listen')));
-        } else if (domain.title == 'Social') {
-          Navigator.push(context,
-              MaterialPageRoute(builder: (_) => const CategoryPage(category: 'Social')));
-        } else if (domain.title == 'Emotion') {
-          Navigator.push(context,
-              MaterialPageRoute(builder: (_) => const CategoryPage(category: 'Emotion')));
-        } else if (domain.title == 'Learn') {
-          Navigator.push(context,
-              MaterialPageRoute(builder: (_) => const CategoryPage(category: 'Learn')));
-        } else if (domain.title == 'Behavior') {
-          Navigator.push(context,
-              MaterialPageRoute(builder: (_) => const CategoryPage(category: 'Behavior')));
-        }
+
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => const SpeakPage()),
+          MaterialPageRoute(
+            builder: (_) => CategoryPage(category: domain.category),
+          ),
         );
+
       },
       child: Stack(
         children: [
@@ -375,7 +353,7 @@ class _DomainTile extends StatelessWidget {
             ),
             padding: const EdgeInsets.all(12),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+              // mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 // Fixed icon height
                 SizedBox(
@@ -383,7 +361,49 @@ class _DomainTile extends StatelessWidget {
                   child: Icon(domain.icon, size: 28, color: AppColors.primary),
                 ),
                 const SizedBox(height: 8),
-                const SizedBox(height: 34, child: Center(child: _DomainTitle())),
+                Expanded(
+                  child: Center(
+                    child: Text(
+                      domain.title,
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        height: 1.15,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => DomainAiUploadPage(
+                            category: domain.category,
+                            displayName: domain.plainTitle,
+                          ),
+                        ),
+                      );
+                    },
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      textStyle: const TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    child: const Text('AI Practice'),
+                  ),
+                ),
               ],
             ),
           ),
@@ -401,31 +421,15 @@ class _DomainTile extends StatelessWidget {
 }
 
 // Helper to keep text style tidy
-class _DomainTitle extends StatelessWidget {
-  const _DomainTitle({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    final widget = context.findAncestorWidgetOfExactType<_DomainTile>()!;
-    return Text(
-      widget.domain.title,
-      textAlign: TextAlign.center,
-      maxLines: 2,
-      overflow: TextOverflow.ellipsis,
-      style: const TextStyle(
-        fontSize: 15,
-        height: 1.15,
-        fontWeight: FontWeight.w700,
-        color: Colors.black87,
-      ),
-    );
-  }
-}
 
 class _Domain {
   final String title;
   final IconData icon;
-  const _Domain(this.title, this.icon);
+  final String category;
+  const _Domain(this.title, this.icon, this.category);
+
+  String get plainTitle => title.replaceAll('\n', ' ');
 }
 
 class _ListCard extends StatelessWidget {

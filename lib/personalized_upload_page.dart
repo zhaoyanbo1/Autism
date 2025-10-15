@@ -6,18 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 
 import 'app_colors.dart';
-
-import 'dart:io' show Platform;
-import 'package:flutter/foundation.dart' show kIsWeb;
-
-const String _envEndpoint = String.fromEnvironment('BACKEND_URL', defaultValue: '');
-
-String get backendEndpoint {
-  if (_envEndpoint.isNotEmpty) return _envEndpoint; // 允许 --dart-define 覆盖
-  if (kIsWeb) return 'http://localhost:8000/api/generate-game';
-  if (Platform.isAndroid) return 'http://10.0.2.2:8000/api/generate-game'; // Android 模拟器
-  return 'http://127.0.0.1:8000/api/generate-game'; // iOS 模拟器/桌面
-}
+import 'backend_config.dart';
 class PersonalizedPracticeUploadPage extends StatefulWidget {
   const PersonalizedPracticeUploadPage({super.key});
 
