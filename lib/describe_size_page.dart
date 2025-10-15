@@ -31,46 +31,13 @@ class _DescribeSizePageState extends State<DescribeSizePage> {
     }
   }
 
-  void _generate() async {
+  void _generate() {
     if (_image == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please pick a photo first')),
       );
       return;
     }
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => Dialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: const [
-              CircularProgressIndicator(),
-              SizedBox(width: 16),
-              Text(
-                "Preparing practice…",
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-
-    // 模拟 3 秒加载
-    await Future.delayed(const Duration(seconds: 3));
-
-    if (!mounted) return;
-
-    // 关闭 loading
-    Navigator.of(context).pop();
-
-    // 跳转页面
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -114,7 +81,7 @@ class _DescribeSizePageState extends State<DescribeSizePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Practice Goal",
+                      "Describe Size",
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w800,

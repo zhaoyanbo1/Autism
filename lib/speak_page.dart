@@ -36,15 +36,6 @@ class _SpeakPageState extends State<SpeakPage> {
       difficulty: Difficulty.beginner,
     ),
     Activity(
-      title: 'Name Familiar Objects',
-      type: 'Labeling',
-      age: '1–2 yrs',
-      description:
-          'Encourage the child to point and name everyday items (cup, ball, dog). Reinforce with praise and repetition.',
-      icon: Icons.label_outline,
-      difficulty: Difficulty.beginner,
-    ),
-    Activity(
       title: 'I want + Noun',
       type: 'Phrase',
       age: '2–3 yrs',
@@ -87,15 +78,6 @@ class _SpeakPageState extends State<SpeakPage> {
       description:
           'Label feelings (“I feel sad because…”) and propose a solution (“I need a hug”).',
       icon: Icons.mood_outlined,
-      difficulty: Difficulty.advanced,
-    ),
-    Activity(
-      title: 'Retell a Short Story',
-      type: 'Narrative',
-      age: '4–6 yrs',
-      description:
-          'After hearing a simple story, prompt the child to retell it in their own words. Support with “Who/What/Where” questions.',
-      icon: Icons.menu_book_outlined,
       difficulty: Difficulty.advanced,
     ),
   ];

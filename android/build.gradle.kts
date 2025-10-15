@@ -1,3 +1,15 @@
+// --------------------  Firebase 插件依赖  --------------------
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath("com.google.gms:google-services:4.4.3")
+    }
+}
+
+// --------------------  Flutter 默认配置  --------------------
 allprojects {
     repositories {
         google()

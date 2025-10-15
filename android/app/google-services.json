@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "257017510484",
+    "project_id": "autism-a8f89",
+    "storage_bucket": "autism-a8f89.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:257017510484:android:f17453e89480f43eef8bc1",
+        "android_client_info": {
+          "package_name": "com.example.app_autism_demo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAu7k4YN2G1V2sHzKRxkAv5ooDsMrgdehs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:257017510484:android:eb7a833df8c70d26ef8bc1",
+        "android_client_info": {
+          "package_name": "com.mycompany.autismapptest"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAu7k4YN2G1V2sHzKRxkAv5ooDsMrgdehs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
