@@ -1,97 +1,64 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import '../app_colors.dart';
+class GeneratedPracticePage extends StatelessWidget {
+  const GeneratedPracticePage({
+    super.key,
+    required this.imagePath,
+    required this.rawResult,
+    required this.practiceTitle,
+    this.practiceGoal,
+  });
+  final String imagePath;
+  final String rawResult;
+  final String practiceTitle;
+  final String? practiceGoal;
 
-class GeneratedPracticePage extends StatefulWidget {
-  final String imagePath; // 从 DescribeSizePage / PracticeIntroPage 传入
-  const GeneratedPracticePage({super.key, required this.imagePath});
-
-  @override
-  State<GeneratedPracticePage> createState() => _GeneratedPracticePageState();
-}
-
-class _GeneratedPracticePageState extends State<GeneratedPracticePage> {
-  bool _loading = true;
-  String? _error;
-  List<dynamic> _steps = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _generateFromAI();
-  }
-
-  Future<void> _generateFromAI() async {
-    try {
-      final uri = Uri.parse("https://your-ai-endpoint.com/api/generate_steps"); // 🔁 改成你的AI接口地址
-      final request = http.MultipartRequest("POST", uri)
-        ..files.add(await http.MultipartFile.fromPath('image', widget.imagePath));
-
-      // 若接口需要额外字段可在此添加，如 category 或 userId
-      request.fields['category'] = 'Leisure';
-
-      final response = await request.send();
-      final respStr = await response.stream.bytesToString();
-
-      if (response.statusCode != 200) {
-        throw Exception("HTTP ${response.statusCode}: $respStr");
-      }
-
-      final decoded = json.decode(respStr);
-      setState(() {
-        _steps = decoded['steps'] ?? [];
-        _loading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _loading = false;
-        _error = e.toString();
-      });
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
+    final steps = _parseSteps(rawResult);
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Generated Practice"),
+        title: const Text('Generated Practice'),
         centerTitle: true,
         backgroundColor: Colors.white,
         surfaceTintColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0.5,
       ),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator())
-          : _error != null
-          ? Center(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Text(
-            "Error generating practice:\n$_error",
-            textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.red),
-          ),
-        ),
-      )
-          : ListView(
+      body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           // 显示上传图片
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
             child: Image.file(
-              File(widget.imagePath),
+              File(imagePath),
               height: 180,
               fit: BoxFit.cover,
             ),
           ),
           const SizedBox(height: 16),
 
+          if (practiceGoal != null && practiceGoal!.trim().isNotEmpty) ...[
+            Text(
+              practiceTitle,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              practiceGoal!,
+              style: const TextStyle(height: 1.4),
+            ),
+            const SizedBox(height: 16),
+          ],
           const Text(
-            "AI-Generated Steps",
+            'AI-Generated Steps',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w800,
@@ -99,15 +66,12 @@ class _GeneratedPracticePageState extends State<GeneratedPracticePage> {
           ),
           const SizedBox(height: 12),
 
-          if (_steps.isEmpty)
-            const Text("No steps returned from AI.")
+          if (steps.isEmpty)
+            const Text('No steps returned from AI.')
           else
-            ..._steps.asMap().entries.map((entry) {
-              final i = entry.key;
+            ...steps.asMap().entries.map((entry) {
+              final index = entry.key;
               final step = entry.value;
-              final title = step['title'] ?? 'Untitled Step';
-              final text = step['text'] ?? '';
-              final tip = step['tip'] ?? null;
 
               return Container(
                 margin: const EdgeInsets.only(bottom: 12),
@@ -130,7 +94,7 @@ class _GeneratedPracticePageState extends State<GeneratedPracticePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Step ${i + 1}: $title',
+                      'Step ${index + 1}${step.title != null ? ': ${step.title}' : ''}',
                       style: const TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 15,
@@ -138,13 +102,13 @@ class _GeneratedPracticePageState extends State<GeneratedPracticePage> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      text,
+                      step.body,
                       style: const TextStyle(height: 1.4),
                     ),
-                    if (tip != null) ...[
+                    if (step.tip != null) ...[
                       const SizedBox(height: 8),
                       Text(
-                        '💡 $tip',
+                        '💡 ${step.tip}',
                         style: TextStyle(
                           color: AppColors.primary,
                           fontWeight: FontWeight.w600,
@@ -159,4 +123,143 @@ class _GeneratedPracticePageState extends State<GeneratedPracticePage> {
       ),
     );
   }
+  List<_GeneratedStep> _parseSteps(String raw) {
+    final normalized = raw.replaceAll('\r\n', '\n').trim();
+    if (normalized.isEmpty) return const [];
+
+    List<String> segments = normalized
+        .split(RegExp(r'\n{2,}'))
+        .map((s) => s.trim())
+        .where((s) => s.isNotEmpty)
+        .toList();
+
+    if (segments.length <= 1) {
+      final numbered = _splitNumbered(normalized);
+      if (numbered.length > 1) {
+        segments = numbered;
+      }
+    }
+
+    final steps = <_GeneratedStep>[];
+
+    for (final segment in segments) {
+      final lines = segment
+          .split('\n')
+          .map((line) => line.trim())
+          .where((line) => line.isNotEmpty)
+          .toList();
+
+      if (lines.isEmpty) {
+        continue;
+      }
+
+      String? title;
+      final firstLine = lines.first;
+      final stripped = _stripNumbering(firstLine);
+      if (stripped != firstLine) {
+        title = stripped;
+        lines[0] = stripped;
+      }
+
+      final tipIndex = lines.indexWhere(
+            (line) => RegExp(
+          r'^(Tip|Tips|Caregiver Tip|Therapist Tip)[:：]',
+          caseSensitive: false,
+        ).hasMatch(line),
+      );
+
+      String? tip;
+      if (tipIndex != -1) {
+        final tipLine = lines.removeAt(tipIndex);
+        final parts = tipLine.split(RegExp(r'[:：]'));
+        if (parts.length > 1) {
+          tip = parts.sublist(1).join(':').trim();
+        }
+      }
+
+      final bodyLines = List<String>.from(lines);
+      if (title != null && bodyLines.isNotEmpty && bodyLines.first == title) {
+        bodyLines.removeAt(0);
+      }
+
+      final bodyText = bodyLines.join('\n').trim();
+      final body = bodyText.isEmpty ? lines.join('\n').trim() : bodyText;
+
+      steps.add(
+        _GeneratedStep(
+          title: title,
+          body: body,
+          tip: tip,
+        ),
+      );
+    }
+
+    if (steps.isEmpty && normalized.isNotEmpty) {
+      steps.add(
+        _GeneratedStep(
+          title: practiceTitle,
+          body: normalized,
+          tip: null,
+        ),
+      );
+    }
+
+    return steps;
+  }
+
+  List<String> _splitNumbered(String text) {
+    final regex = RegExp(
+      r'^\s*(?:Step\s*\d+|\d+[\.)\-:])',
+      multiLine: true,
+      caseSensitive: false,
+    );
+    final matches = regex.allMatches(text).toList();
+    if (matches.length <= 1) return [text];
+
+    final pieces = <String>[];
+    for (var i = 0; i < matches.length; i++) {
+      final start = matches[i].start;
+      final end = i + 1 < matches.length ? matches[i + 1].start : text.length;
+      final chunk = text.substring(start, end).trim();
+      if (chunk.isNotEmpty) {
+        pieces.add(chunk);
+      }
+    }
+
+    final leading = text.substring(0, matches.first.start).trim();
+    if (leading.isNotEmpty) {
+      pieces.insert(0, leading);
+    }
+
+    return pieces;
+  }
+
+  String _stripNumbering(String line) {
+    final stepMatch = RegExp(
+      r'^(?:Step\s*(\d+)[\.:)\-]*\s*)(.*)',
+      caseSensitive: false,
+    ).firstMatch(line);
+    if (stepMatch != null) {
+      return stepMatch.group(2)?.trim() ?? '';
+    }
+
+    final numberedMatch = RegExp(r'^(\d+)[\.)\-:]\s*(.*)').firstMatch(line);
+    if (numberedMatch != null) {
+      return numberedMatch.group(2)?.trim() ?? '';
+    }
+
+    return line.trim();
+  }
+}
+
+class _GeneratedStep {
+  const _GeneratedStep({
+    required this.body,
+    this.title,
+    this.tip,
+  });
+
+  final String body;
+  final String? title;
+  final String? tip;
 }

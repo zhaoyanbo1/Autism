@@ -1,8 +1,13 @@
 import 'dart:io';
-import 'package:flutter/material.dart';
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import '../app_colors.dart';
+
+import '../backend_config.dart';
 import 'generated_practice_page.dart';
 
 class PracticeIntroPage extends StatefulWidget {
@@ -16,6 +21,7 @@ class PracticeIntroPage extends StatefulWidget {
 
 class _PracticeIntroPageState extends State<PracticeIntroPage> {
   XFile? _image;
+  bool _sending = false;
 
   Future<void> _pickFromGallery() async {
     try {
@@ -31,47 +37,134 @@ class _PracticeIntroPageState extends State<PracticeIntroPage> {
     }
   }
 
-  void _generate() async {
+  String _buildInstruction() {
+    final data = widget.data;
+    final buffer = StringBuffer();
+
+    void writeLine(String label, dynamic value) {
+      if (value == null) return;
+      final text = value is String ? value.trim() : value.toString().trim();
+      if (text.isEmpty) return;
+      buffer.writeln('$label: $text');
+    }
+
+    writeLine('Practice title', data['title']);
+    writeLine('Category', data['category']);
+    writeLine('Practice goal', data['practiceGoal']);
+    writeLine('Overview', data['description']);
+    writeLine('Type', data['type']);
+    writeLine('Age range', data['age']);
+    writeLine('Template guidance', data['templateDescription'] ?? data['template'] ?? data['templateSummary']);
+    writeLine('Key skills', data['skills']);
+    writeLine('Additional notes', data['additionalNotes']);
+
+    final prompt = data['aiPrompt'] ?? data['prompt'];
+    if (prompt is String && prompt.trim().isNotEmpty) {
+      buffer.writeln(prompt.trim());
+    }
+
+    final result = buffer.toString().trim();
+    return result.isEmpty ? 'Generate a caregiver friendly practice routine for ${data['title'] ?? 'this activity'}.' : result;
+  }
+
+  Future<void> _generate() async {
     if (_image == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please pick a photo first')),
       );
       return;
     }
+    if (_sending) return;
+
+    setState(() => _sending = true);
+
+    final instruction = _buildInstruction();
+
+    bool dialogShown = false;
+
 
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => Dialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: const [
-              CircularProgressIndicator(),
-              SizedBox(width: 16),
-              Text(
-                "Preparing practice…",
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+      builder: (_) =>
+          Dialog(
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16)),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  CircularProgressIndicator(),
+                  SizedBox(width: 16),
+                  Text(
+                    "Preparing practice…",
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
+    );
+
+    dialogShown = true;
+
+    try {
+      final request = http.MultipartRequest('POST', Uri.parse(backendEndpoint))
+        ..fields['instruction'] = instruction
+        ..files.add(await http.MultipartFile.fromPath('image', _image!.path));
+
+      final streamed = await request.send();
+      final response = await http.Response.fromStream(streamed);
+
+      if (response.statusCode != 200) {
+        throw HttpException('Backend error: ${response.statusCode}');
+      }
+
+      final payload = jsonDecode(response.body) as Map<String, dynamic>;
+      final resultText = (payload['result'] as String?)?.trim();
+      if (resultText == null || resultText.isEmpty) {
+        throw const FormatException('Empty response from AI');
+      }
+
+      if (!mounted) return;
+
+      if (dialogShown) {
+        Navigator.of(context, rootNavigator: true).pop();
+        dialogShown = false;
+      }
+
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) =>
+              GeneratedPracticePage(
+                imagePath: _image!.path,
+                practiceTitle: widget.data['title'] as String? ??
+                    'Generated Practice',
+                practiceGoal: widget.data['practiceGoal'] as String?,
+                rawResult: resultText,
+              ),
         ),
-      ),
-    );
-
-    await Future.delayed(const Duration(seconds: 3));
-    if (!mounted) return;
-    Navigator.of(context).pop();
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => GeneratedPracticePage(imagePath: _image!.path),
-      ),
-    );
+      );
+    } catch (err) {
+      if (!mounted) return;
+      if (dialogShown) {
+        Navigator.of(context, rootNavigator: true).pop();
+        dialogShown = false;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to generate practice: $err')),
+      );
+    } finally {
+      if (mounted) {
+        if (dialogShown) {
+          Navigator.of(context, rootNavigator: true).pop();
+        }
+        setState(() => _sending = false);
+      }
+    }
   }
 
   IconData _parseIcon(String? name) {
@@ -295,7 +388,7 @@ class _PracticeIntroPageState extends State<PracticeIntroPage> {
                         width: double.infinity,
                         height: 48,
                         child: FilledButton(
-                          onPressed: _generate,
+                          onPressed: _sending ? null : _generate,
                           style: FilledButton.styleFrom(
                             backgroundColor: AppColors.primary,
                             foregroundColor: Colors.white,

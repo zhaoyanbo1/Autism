@@ -128,6 +128,7 @@ class _DomainAiUploadPageState extends State<DomainAiUploadPage> {
         ..fields['category'] = widget.category
         ..fields['difficulty'] = _mode.name
         ..fields['prompt'] = _promptPreview
+        ..fields['instruction'] = _promptPreview
         ..files.add(await http.MultipartFile.fromPath('image', _image!.path));
 
       final streamed = await request.send();

@@ -5,8 +5,9 @@
   },
   "functions": [
     {
-      "source": "functions",
-      "codebase": "functions"
+      "source": "functions-py",
+      "codebase": "functions-py",
+      "runtime": "python310"
     }
   ],
   "storage": {
