@@ -7,6 +7,8 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../app_colors.dart';
 import '../../backend_config.dart';
+import '../../backend_error.dart';
+import '../../image_upload.dart';
 
 enum DomainGenerationMode { simple, medium, hard }
 
@@ -129,7 +131,7 @@ class _DomainAiUploadPageState extends State<DomainAiUploadPage> {
         ..fields['difficulty'] = _mode.name
         ..fields['prompt'] = _promptPreview
         ..fields['instruction'] = _promptPreview
-        ..files.add(await http.MultipartFile.fromPath('image', _image!.path));
+        ..files.add(await createImageMultipart('image', _image!));
 
       final streamed = await request.send();
       final response = await http.Response.fromStream(streamed);
@@ -137,7 +139,7 @@ class _DomainAiUploadPageState extends State<DomainAiUploadPage> {
       if (!mounted) return;
 
       if (response.statusCode != 200) {
-        throw HttpException('Backend error: ${response.statusCode}');
+        throw HttpException(describeBackendError(response));
       }
 
       final data = jsonDecode(response.body) as Map<String, dynamic>;

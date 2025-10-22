@@ -7,6 +7,8 @@ import 'package:image_picker/image_picker.dart';
 
 import 'app_colors.dart';
 import 'backend_config.dart';
+import 'backend_error.dart';
+import 'image_upload.dart';
 class PersonalizedPracticeUploadPage extends StatefulWidget {
   const PersonalizedPracticeUploadPage({super.key});
 
@@ -76,7 +78,7 @@ class _PersonalizedPracticeUploadPageState extends State<PersonalizedPracticeUpl
       final uri = Uri.parse(backendEndpoint);
       final request = http.MultipartRequest('POST', uri);
       request.fields['instruction'] = _instructionCtrl.text;
-      request.files.add(await http.MultipartFile.fromPath('image', _image!.path));
+      request.files.add(await createImageMultipart('image', _image!));
 
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
@@ -84,7 +86,7 @@ class _PersonalizedPracticeUploadPageState extends State<PersonalizedPracticeUpl
       if (!mounted) return;
 
       if (response.statusCode != 200) {
-        throw HttpException('Backend error: ${response.statusCode}');
+        throw HttpException(describeBackendError(response));
       }
 
       final data = jsonDecode(response.body) as Map<String, dynamic>;

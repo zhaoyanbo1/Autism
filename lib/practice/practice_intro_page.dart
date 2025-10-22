@@ -8,6 +8,8 @@ import 'package:image_picker/image_picker.dart';
 import '../app_colors.dart';
 
 import '../backend_config.dart';
+import '../backend_error.dart';
+import '../../image_upload.dart';
 import 'generated_practice_page.dart';
 
 class PracticeIntroPage extends StatefulWidget {
@@ -113,13 +115,13 @@ class _PracticeIntroPageState extends State<PracticeIntroPage> {
     try {
       final request = http.MultipartRequest('POST', Uri.parse(backendEndpoint))
         ..fields['instruction'] = instruction
-        ..files.add(await http.MultipartFile.fromPath('image', _image!.path));
+        ..files.add(await createImageMultipart('image', _image!));
 
       final streamed = await request.send();
       final response = await http.Response.fromStream(streamed);
 
       if (response.statusCode != 200) {
-        throw HttpException('Backend error: ${response.statusCode}');
+        throw HttpException(describeBackendError(response));
       }
 
       final payload = jsonDecode(response.body) as Map<String, dynamic>;
