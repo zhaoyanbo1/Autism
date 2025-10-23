@@ -57,11 +57,11 @@ class _DomainAiUploadPageState extends State<DomainAiUploadPage> {
 
   static const Map<DomainGenerationMode, String> _modePrompts = {
     DomainGenerationMode.simple:
-    'Keep the routine short with 3 concise steps. Provide very clear caregiver cues and simple language.',
+    'Keep the routine short with 5 concise steps. Provide very clear caregiver cues and simple language.',
     DomainGenerationMode.medium:
-    'Provide 4-5 steps with moderate scaffolding. Include ideas for prompting the child and optional extensions.',
+    'Provide 5 steps with moderate scaffolding. Include ideas for prompting the child and optional extensions.',
     DomainGenerationMode.hard:
-    'Offer 5-6 detailed steps that challenge the child. Include opportunities for independence and generalization.',
+    'Offer 5 detailed steps that challenge the child. Include opportunities for independence and generalization.',
   };
 
   String get _promptPreview {

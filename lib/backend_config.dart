@@ -1,5 +1,5 @@
-
-
+//
+//
 const String _envEndpoint = String.fromEnvironment('BACKEND_URL', defaultValue: '');
 const String _envHealthEndpoint =
 String.fromEnvironment('BACKEND_HEALTH_URL', defaultValue: '');
@@ -28,6 +28,9 @@ String get backendHealthEndpoint {
   if (_envHealthEndpoint.isNotEmpty) return _envHealthEndpoint;
   return _defaultHealthEndpoint;
 }
+
+
+
 // import 'dart:io' show Platform;
 // import 'package:flutter/foundation.dart' show kIsWeb;
 //

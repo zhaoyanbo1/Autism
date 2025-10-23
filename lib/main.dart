@@ -238,19 +238,19 @@ class _HomeScreenState extends State<HomeScreen> {
       bottomNavigationBar: NavigationBar(
         selectedIndex: currentIndex,
         onDestinationSelected: (i) {
-           if (i == 1) {
-      // 点击 category 时跳转到 DailyCheckInPage
-      // 如果 DailyCheckInPage 在同一个文件，直接用类名；若在其它文件，请在文件头 import 对应路径。
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const DailyPracticePage()),
-          );
-      // 可选：如果你想在页面返回后把底部栏高亮恢复为首页（index 0），取消注释下面一行：
-      // setState(() => currentIndex = 0);
+          if (i == 1) {
+            // 点击 category 时跳转到 DailyCheckInPage
+            // 如果 DailyCheckInPage 在同一个文件，直接用类名；若在其它文件，请在文件头 import 对应路径。
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const DailyPracticePage()),
+            );
+            // 可选：如果你想在页面返回后把底部栏高亮恢复为首页（index 0），取消注释下面一行：
+            // setState(() => currentIndex = 0);
           } else {
-          setState(() => currentIndex = i);
-            }
-          },
+            setState(() => currentIndex = i);
+          }
+        },
 
         destinations: const [
           NavigationDestination(icon: Icon(Icons.home_outlined), label: ''),
@@ -295,15 +295,15 @@ class _DomainGrid extends StatelessWidget {
   const _DomainGrid({super.key});
 
   final List<_Domain> domains = const [
-    _Domain('Leisure', Icons.toys, 'Leisure'),
-    _Domain('Listen', Icons.psychology_alt_outlined, 'Listen'),
-    _Domain('Speak', Icons.chat_bubble_outline, 'Speak'),
-    _Domain('Emotion', Icons.emoji_emotions_outlined, 'Emotion'),
-    _Domain('Social', Icons.group_outlined, 'Social'),
-    _Domain('Learn', Icons.menu_book_outlined, 'Learn'),
-    _Domain('Behavior', Icons.account_box_outlined, 'Behavior'),
-    _Domain('Gross\nMotor', Icons.directions_run, 'GrossMotor'),
-    _Domain('Fine\nMotor', Icons.keyboard_alt_outlined, 'FineMotor'),
+    _Domain('Leisure', Icons.toys),
+    _Domain('Listen', Icons.psychology_alt_outlined),
+    _Domain('Speak', Icons.chat_bubble_outline),
+    _Domain('Emotion', Icons.emoji_emotions_outlined),
+    _Domain('Social', Icons.group_outlined),
+    _Domain('Learn', Icons.menu_book_outlined),
+    _Domain('Behavior', Icons.account_box_outlined),
+    _Domain('Gross\nMotor', Icons.directions_run),
+    _Domain('Fine\nMotor', Icons.keyboard_alt_outlined),
   ];
 
   @override
@@ -316,7 +316,7 @@ class _DomainGrid extends StatelessWidget {
         crossAxisCount: 3,
         crossAxisSpacing: 8,
         mainAxisSpacing: 8,
-        childAspectRatio: 0.9,
+        childAspectRatio: 1.1,
       ),
       itemBuilder: (context, i) => _DomainTile(domain: domains[i]),
     );
@@ -333,14 +333,38 @@ class _DomainTile extends StatelessWidget {
 
     return GestureDetector(
       onTap: () {
-
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => CategoryPage(category: domain.category),
-          ),
-        );
-
+        if (domain.title == 'Speak') {
+          Navigator.push(context,
+              MaterialPageRoute(builder: (_) => const CategoryPage(category: 'Speak')));
+        } else if (domain.title == 'Gross\nMotor') {
+          Navigator.push(context,
+              MaterialPageRoute(builder: (_) => const CategoryPage(category: 'GrossMotor')));
+        } else if (domain.title == 'Fine\nMotor') {
+          Navigator.push(context,
+              MaterialPageRoute(builder: (_) => const CategoryPage(category: 'FineMotor')));
+        } else if (domain.title == 'Leisure') {
+          Navigator.push(context,
+              MaterialPageRoute(builder: (_) => const CategoryPage(category: 'Leisure')));
+        } else if (domain.title == 'Listen') {
+          Navigator.push(context,
+              MaterialPageRoute(builder: (_) => const CategoryPage(category: 'Listen')));
+        } else if (domain.title == 'Social') {
+          Navigator.push(context,
+              MaterialPageRoute(builder: (_) => const CategoryPage(category: 'Social')));
+        } else if (domain.title == 'Emotion') {
+          Navigator.push(context,
+              MaterialPageRoute(builder: (_) => const CategoryPage(category: 'Emotion')));
+        } else if (domain.title == 'Learn') {
+          Navigator.push(context,
+              MaterialPageRoute(builder: (_) => const CategoryPage(category: 'Learn')));
+        } else if (domain.title == 'Behavior') {
+          Navigator.push(context,
+              MaterialPageRoute(builder: (_) => const CategoryPage(category: 'Behavior')));
+        }
+        // Navigator.push(
+        //   context,
+        //   MaterialPageRoute(builder: (_) => const SpeakPage()),
+        // );
       },
       child: Stack(
         children: [
@@ -353,7 +377,7 @@ class _DomainTile extends StatelessWidget {
             ),
             padding: const EdgeInsets.all(12),
             child: Column(
-              // mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 // Fixed icon height
                 SizedBox(
@@ -361,49 +385,7 @@ class _DomainTile extends StatelessWidget {
                   child: Icon(domain.icon, size: 28, color: AppColors.primary),
                 ),
                 const SizedBox(height: 8),
-                Expanded(
-                  child: Center(
-                    child: Text(
-                      domain.title,
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        height: 1.15,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.black87,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => DomainAiUploadPage(
-                            category: domain.category,
-                            displayName: domain.plainTitle,
-                          ),
-                        ),
-                      );
-                    },
-                    style: FilledButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
-                      textStyle: const TextStyle(
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    child: const Text('AI Practice'),
-                  ),
-                ),
+                const SizedBox(height: 34, child: Center(child: _DomainTitle())),
               ],
             ),
           ),
@@ -421,15 +403,31 @@ class _DomainTile extends StatelessWidget {
 }
 
 // Helper to keep text style tidy
+class _DomainTitle extends StatelessWidget {
+  const _DomainTitle({super.key});
 
+  @override
+  Widget build(BuildContext context) {
+    final widget = context.findAncestorWidgetOfExactType<_DomainTile>()!;
+    return Text(
+      widget.domain.title,
+      textAlign: TextAlign.center,
+      maxLines: 2,
+      overflow: TextOverflow.ellipsis,
+      style: const TextStyle(
+        fontSize: 15,
+        height: 1.15,
+        fontWeight: FontWeight.w700,
+        color: Colors.black87,
+      ),
+    );
+  }
+}
 
 class _Domain {
   final String title;
   final IconData icon;
-  final String category;
-  const _Domain(this.title, this.icon, this.category);
-
-  String get plainTitle => title.replaceAll('\n', ' ');
+  const _Domain(this.title, this.icon);
 }
 
 class _ListCard extends StatelessWidget {
