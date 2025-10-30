@@ -1,8 +1,10 @@
 import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
+
 import '../app_colors.dart';
-class GeneratedPracticePage extends StatelessWidget {
+
+class GeneratedPracticePage extends StatefulWidget {
   const GeneratedPracticePage({
     super.key,
     required this.imagePath,
@@ -10,24 +12,122 @@ class GeneratedPracticePage extends StatelessWidget {
     required this.practiceTitle,
     this.practiceGoal,
   });
+
   final String imagePath;
   final String rawResult;
   final String practiceTitle;
   final String? practiceGoal;
 
+  @override
+  State<GeneratedPracticePage> createState() => _GeneratedPracticePageState();
+}
+
+class _GeneratedPracticePageState extends State<GeneratedPracticePage> {
+  late final PageController _pageCtrl;
+  int _index = 0;
+
+  late final List<_StepItem> _steps;
+  String? _bonusTip;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageCtrl = PageController();
+
+    final parsed = _parseSteps(widget.rawResult);
+    final steps = parsed.steps;
+    final numberedSteps = steps.where((step) => step.number != null).toList();
+    final displayedSteps =
+        (numberedSteps.isNotEmpty ? numberedSteps : steps).take(5).toList();
+
+    _steps = [
+      for (var i = 0; i < displayedSteps.length; i++)
+        _StepItem(
+          title: _resolveTitle(displayedSteps[i], i),
+          text: _markdownToPlainText(displayedSteps[i].body),
+          tip: _normalizeTip(displayedSteps[i].tip),
+        ),
+    ];
+
+    final bonus = parsed.bonusTip?.trim() ?? '';
+    _bonusTip = bonus.isEmpty ? null : _markdownToPlainText(bonus);
+  }
+
+  @override
+  void dispose() {
+    _pageCtrl.dispose();
+    super.dispose();
+  }
+
+  void _go(int delta) {
+    if (_steps.isEmpty) return;
+    final next = (_index + delta).clamp(0, _steps.length - 1);
+    if (next != _index) {
+      _pageCtrl.animateToPage(
+        next,
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOut,
+      );
+    }
+  }
+
+  String _resolveTitle(_GeneratedStep step, int index) {
+    final rawTitle = step.title?.trim() ?? '';
+    if (rawTitle.isNotEmpty) {
+      return rawTitle;
+    }
+    final fallbackNumber = step.number ?? index + 1;
+    return 'Step $fallbackNumber';
+  }
+
+  String? _normalizeTip(String? tip) {
+    if (tip == null) return null;
+    final normalized = _markdownToPlainText(tip).trim();
+    return normalized.isEmpty ? null : normalized;
+  }
+
+  String _markdownToPlainText(String markdown) {
+    var text = markdown;
+
+    text = text.replaceAll('\\r\\n', '\\n');
+    text = text.replaceAllMapped(
+      RegExp(r'\[(.*?)\]\((.*?)\)'),
+      (match) => match.group(1) ?? '',
+    );
+    text = text.replaceAllMapped(
+      RegExp(r'\*\*(.*?)\*\*'),
+      (match) => match.group(1) ?? '',
+    );
+    text = text.replaceAllMapped(
+      RegExp(r'__(.*?)__'),
+      (match) => match.group(1) ?? '',
+    );
+    text = text.replaceAllMapped(
+      RegExp(r'`([^`]*)`'),
+      (match) => match.group(1) ?? '',
+    );
+    text = text.replaceAll(RegExp(r'^[-*•]\s*', multiLine: true), '• ');
+    text = text.replaceAllMapped(
+      RegExp(r'_([^_]*)_'),
+      (match) => match.group(1) ?? '',
+    );
+
+    return text.trim();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final parsed = _parseSteps(rawResult);
-    final steps = parsed.steps;
-    final bonusTip = parsed.bonusTip;
-    final numberedSteps = steps.where((step) => step.number != null).toList();
-    final displayedSteps = (numberedSteps.isNotEmpty ? numberedSteps : steps)
-        .take(5)
-        .toList();
+    final hasSteps = _steps.isNotEmpty;
+    final goalText = (widget.practiceGoal ?? '').trim();
+    final resolvedGoal = goalText.isEmpty
+        ? 'Use these generated steps to guide your practice session.'
+        : goalText;
+
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Generated Practice'),
+        title: Text(widget.practiceTitle),
         centerTitle: true,
         backgroundColor: Colors.white,
         surfaceTintColor: Colors.white,
@@ -35,138 +135,228 @@ class GeneratedPracticePage extends StatelessWidget {
         elevation: 0.5,
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
         children: [
-          // 显示上传图片
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Image.file(
-              File(imagePath),
-              height: 180,
-              fit: BoxFit.cover,
+          Container(
+            decoration: BoxDecoration(
+              color: AppColors.cardBlue.withOpacity(.5),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.primary.withOpacity(.15)),
             ),
-          ),
-          const SizedBox(height: 16),
-
-          if (practiceGoal != null && practiceGoal!.trim().isNotEmpty) ...[
-            Text(
-              practiceTitle,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              practiceGoal!,
-              style: const TextStyle(height: 1.4),
-            ),
-            const SizedBox(height: 16),
-          ],
-          const Text(
-            'AI-Generated Steps',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: 12),
-
-          if (displayedSteps.isEmpty)
-            const Text('No steps returned from AI.')
-          else
-            ...displayedSteps.asMap().entries.map((entry) {
-              final index = entry.key;
-              final step = entry.value;
-              final stepNumber = step.number ?? (index + 1);
-
-              return Container(
-                margin: const EdgeInsets.only(bottom: 12),
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: AppColors.primary.withOpacity(.1),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(.04),
-                      blurRadius: 10,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Step $stepNumber',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 15,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    MarkdownBody(
-                      data: step.body,
-                      styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context))
-                          .copyWith(p: const TextStyle(height: 1.4)),
-                    ),
-                    if (step.tip != null) ...[
-                      const SizedBox(height: 8),
-                      MarkdownBody(
-                        data: '💡 ${step.tip}',
-                        styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context))
-                            .copyWith(
-                          p: TextStyle(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.w600,
-                            height: 1.4,
-                          ),
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _iconBadge(Icons.auto_awesome),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.practiceTitle,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 16,
                         ),
                       ),
+                      const SizedBox(height: 6),
+                      Text(
+                        resolvedGoal,
+                        style: TextStyle(
+                          color: Colors.black.withOpacity(.80),
+                          height: 1.3,
+                        ),
+                      ),
+                      if (widget.imagePath.isNotEmpty) ...[
+                        const SizedBox(height: 12),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.file(
+                            File(widget.imagePath),
+                            height: 140,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
-              );
-            }),
-          if (bonusTip != null) ...[
-            const SizedBox(height: 4),
-            Container(
-              margin: const EdgeInsets.only(top: 12),
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: AppColors.cardBlue.withOpacity(.4),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: AppColors.primary.withOpacity(.2),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          if (hasSteps) ...[
+            Row(
+              children: [
+                const Expanded(
+                  child: Text(
+                    'Game steps',
+                    style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+                  ),
                 ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                Text(
+                  'Step ${_index + 1}/${_steps.length}',
+                  style: TextStyle(color: Colors.black.withOpacity(.6)),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            _progressBar(_index, _steps.length, colorScheme.primary),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 240,
+              child: Stack(
                 children: [
-                  const Text(
-                    'Bonus Tip',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 15,
+                  PageView.builder(
+                    controller: _pageCtrl,
+                    itemCount: _steps.length,
+                    onPageChanged: (i) => setState(() => _index = i),
+                    itemBuilder: (_, i) => _StepCard(
+                      item: _steps[i],
+                      index: i,
+                      total: _steps.length,
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  MarkdownBody(
-                    data: bonusTip!,
-                    styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context))
-                        .copyWith(p: const TextStyle(height: 1.4)),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: _arrowButton(
+                      Icons.chevron_left,
+                      onTap: () => _go(-1),
+                      enabled: _index > 0,
+                    ),
+                  ),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: _arrowButton(
+                      Icons.chevron_right,
+                      onTap: () => _go(1),
+                      enabled: _index < _steps.length - 1,
+                    ),
                   ),
                 ],
               ),
             ),
+          ] else ...[
+            const Text(
+              'No steps returned from AI.',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
+          ],
+
+          if (_bonusTip != null) ...[
+            const SizedBox(height: 20),
+            _bonusTipCard(_bonusTip!),
           ],
         ],
       ),
     );
   }
+
+  Widget _bonusTipCard(String tip) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.primary.withOpacity(.08),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.primary.withOpacity(.18)),
+      ),
+      padding: const EdgeInsets.all(14),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            Icons.emoji_objects_outlined,
+            color: AppColors.primary,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Bonus Tip',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 15,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  tip,
+                  style: TextStyle(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w700,
+                    height: 1.35,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _iconBadge(IconData icon) {
+    return Container(
+      height: 42,
+      width: 42,
+      decoration: BoxDecoration(
+        color: AppColors.cardBlue,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.primary.withOpacity(.25)),
+      ),
+      alignment: Alignment.center,
+      child: Icon(icon, color: AppColors.primary),
+    );
+  }
+
+  Widget _progressBar(int index, int total, Color color) {
+    final ratio = (index + 1) / total;
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(999),
+      child: Stack(
+        children: [
+          Container(height: 8, color: color.withOpacity(.12)),
+          FractionallySizedBox(
+            widthFactor: ratio,
+            child: Container(height: 8, color: color),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _arrowButton(
+    IconData icon, {
+    required VoidCallback onTap,
+    required bool enabled,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 2),
+      child: Material(
+        color: enabled ? Colors.white : Colors.white.withOpacity(.7),
+        shape: const CircleBorder(),
+        elevation: enabled ? 2 : 0,
+        child: InkWell(
+          customBorder: const CircleBorder(),
+          onTap: enabled ? onTap : null,
+          child: Padding(
+            padding: const EdgeInsets.all(6),
+            child: Icon(
+              icon,
+              size: 24,
+              color: enabled ? AppColors.primary : Colors.black26,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   ({List<_GeneratedStep> steps, String? bonusTip}) _parseSteps(String raw) {
     final normalized = raw.replaceAll('\r\n', '\n').trim();
     if (normalized.isEmpty) {
@@ -193,8 +383,7 @@ class GeneratedPracticePage extends StatelessWidget {
       for (var i = 0; i < matches.length; i++) {
         final match = matches[i];
         final start = match.start;
-        final end =
-        i + 1 < matches.length ? matches[i + 1].start : normalized.length;
+        final end = i + 1 < matches.length ? matches[i + 1].start : normalized.length;
         final chunk = normalized.substring(start, end).trim();
         if (chunk.isEmpty) continue;
 
@@ -222,7 +411,7 @@ class GeneratedPracticePage extends StatelessWidget {
           }
 
           final withoutBullet =
-          trimmed.replaceFirst(RegExp(r'^[-*•]\s*'), '');
+              trimmed.replaceFirst(RegExp(r'^[-*•]\s*'), '');
           final tipMatch = RegExp(
             r'^(?:\*\*)?(Tip|Tips|Caregiver Tip|Therapist Tip)(?:\*\*)?[:：]\s*(.*)',
             caseSensitive: false,
@@ -347,7 +536,8 @@ class GeneratedPracticePage extends StatelessWidget {
 
     final steps = <_GeneratedStep>[];
 
-    for (final segment in segments) {
+    for (var i = 0; i < segments.length; i++) {
+      final segment = segments[i];
       final rawLines = segment
           .split('\n')
           .map((line) => line.trimRight())
@@ -389,7 +579,7 @@ class GeneratedPracticePage extends StatelessWidget {
         }
 
         final withoutBullet =
-        trimmed.replaceFirst(RegExp(r'^[-*•]\s*'), '');
+            trimmed.replaceFirst(RegExp(r'^[-*•]\s*'), '');
         final tipMatch = RegExp(
           r'^(?:\*\*)?(Tip|Tips|Caregiver Tip|Therapist Tip)(?:\*\*)?[:：]\s*(.*)',
           caseSensitive: false,
@@ -402,6 +592,8 @@ class GeneratedPracticePage extends StatelessWidget {
           }
           continue;
         }
+
+        filteredLines.add(trimmedRight);
       }
 
       while (filteredLines.isNotEmpty && filteredLines.first.trim().isEmpty) {
@@ -429,7 +621,7 @@ class GeneratedPracticePage extends StatelessWidget {
       steps.add(
         _GeneratedStep(
           number: null,
-          title: practiceTitle,
+          title: widget.practiceTitle,
           body: text.trim(),
           tip: null,
         ),
@@ -442,21 +634,20 @@ class GeneratedPracticePage extends StatelessWidget {
   int? _extractStepNumber(String line) {
     final normalized = line.trim();
     final stepMatch =
-    RegExp(r'Step\s*(\d+)', caseSensitive: false).firstMatch(normalized);
+        RegExp(r'Step\s*(\d+)', caseSensitive: false).firstMatch(normalized);
     if (stepMatch != null) {
       return int.tryParse(stepMatch.group(1) ?? '');
     }
 
     final numberedMatch =
-    RegExp(r'^(?:\*\*)?(\d+)[\.)\-]', caseSensitive: false)
-        .firstMatch(normalized);
+        RegExp(r'^(?:\*\*)?(\d+)[\.)\-]', caseSensitive: false)
+            .firstMatch(normalized);
     if (numberedMatch != null) {
       return int.tryParse(numberedMatch.group(1) ?? '');
     }
 
     return null;
   }
-
 
   List<String> _splitNumbered(String text) {
     final regex = RegExp(
@@ -500,6 +691,129 @@ class GeneratedPracticePage extends StatelessWidget {
     }
 
     return line.trim();
+  }
+}
+
+class _StepItem {
+  const _StepItem({
+    required this.title,
+    required this.text,
+    this.tip,
+  });
+
+  final String title;
+  final String text;
+  final String? tip;
+}
+
+class _StepCard extends StatelessWidget {
+  const _StepCard({
+    required this.item,
+    required this.index,
+    required this.total,
+  });
+
+  final _StepItem item;
+  final int index;
+  final int total;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.primary.withOpacity(.12)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(.05),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(.08),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  'Step ${index + 1}/$total',
+                  style: TextStyle(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 12.5,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            item.title,
+            style: const TextStyle(
+              fontWeight: FontWeight.w800,
+              fontSize: 17,
+              height: 1.2,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            item.text,
+            style: TextStyle(
+              height: 1.45,
+              color: Colors.black.withOpacity(.86),
+              fontWeight: FontWeight.w500,
+              fontSize: 15,
+            ),
+          ),
+          if (item.tip != null) ...[
+            const SizedBox(height: 12),
+            Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(.08),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.primary.withOpacity(.18)),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    Icons.tips_and_updates_outlined,
+                    color: AppColors.primary,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      item.tip!,
+                      style: TextStyle(
+                        color: AppColors.primary,
+                        height: 1.35,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
   }
 }
 
