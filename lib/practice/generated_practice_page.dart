@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
@@ -136,10 +135,6 @@ class _GeneratedPracticePageState extends State<GeneratedPracticePage> {
   @override
   Widget build(BuildContext context) {
     final hasSteps = _steps.isNotEmpty;
-    final goalText = (widget.practiceGoal ?? '').trim();
-    final resolvedGoal = goalText.isEmpty
-        ? 'Use these generated steps to guide your practice session.'
-        : goalText;
 
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -155,58 +150,6 @@ class _GeneratedPracticePageState extends State<GeneratedPracticePage> {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
         children: [
-          Container(
-            decoration: BoxDecoration(
-              color: AppColors.cardBlue.withOpacity(.5),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.primary.withOpacity(.15)),
-            ),
-            padding: const EdgeInsets.all(14),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _iconBadge(Icons.auto_awesome),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        widget.practiceTitle,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w800,
-                          fontSize: 16,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        resolvedGoal,
-                        style: TextStyle(
-                          color: Colors.black.withOpacity(.80),
-                          height: 1.3,
-                        ),
-                      ),
-                      if (widget.imagePath.isNotEmpty) ...[
-                        const SizedBox(height: 12),
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: Image.file(
-                            File(widget.imagePath),
-                            height: 140,
-                            width: double.infinity,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
           if (hasSteps) ...[
             Row(
               children: [
@@ -226,7 +169,7 @@ class _GeneratedPracticePageState extends State<GeneratedPracticePage> {
             _progressBar(_index, _steps.length, colorScheme.primary),
             const SizedBox(height: 12),
             SizedBox(
-              height: 600,
+              height: 400,
               child: Stack(
                 children: [
                   PageView.builder(
@@ -237,6 +180,7 @@ class _GeneratedPracticePageState extends State<GeneratedPracticePage> {
                       item: _steps[i],
                       index: i,
                       total: _steps.length,
+                      imageAsset: _stepImageForIndex(i),
                     ),
                   ),
                   Align(
@@ -266,7 +210,7 @@ class _GeneratedPracticePageState extends State<GeneratedPracticePage> {
           ],
 
           if (_hasIllustration) ...[
-            const SizedBox(height: 200),
+            const SizedBox(height: 24),
             Container(
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -296,6 +240,23 @@ class _GeneratedPracticePageState extends State<GeneratedPracticePage> {
         ],
       ),
     );
+  }
+
+  String _stepImageForIndex(int index) {
+    const assets = [
+      'assets/images/leisure/step1.png',
+      'assets/images/leisure/step2.png',
+      'assets/images/leisure/step3.png',
+      'assets/images/leisure/step4.png',
+      'assets/images/leisure/step5.png',
+    ];
+    if (assets.isEmpty) {
+      return '';
+    }
+    if (index < assets.length) {
+      return assets[index];
+    }
+    return assets.last;
   }
   bool get _hasIllustration {
     final hasBytes = _illustrationBytes != null && _illustrationBytes!.isNotEmpty;
@@ -385,20 +346,6 @@ class _GeneratedPracticePageState extends State<GeneratedPracticePage> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _iconBadge(IconData icon) {
-    return Container(
-      height: 42,
-      width: 42,
-      decoration: BoxDecoration(
-        color: AppColors.cardBlue,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.primary.withOpacity(.25)),
-      ),
-      alignment: Alignment.center,
-      child: Icon(icon, color: AppColors.primary),
     );
   }
 
@@ -799,11 +746,13 @@ class _StepCard extends StatelessWidget {
     required this.item,
     required this.index,
     required this.total,
+    required this.imageAsset,
   });
 
   final _StepItem item;
   final int index;
   final int total;
+  final String imageAsset;
 
   @override
   Widget build(BuildContext context) {
@@ -825,80 +774,103 @@ class _StepCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(.08),
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: Text(
-                  'Step ${index + 1}/$total',
-                  style: TextStyle(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w800,
-                    fontSize: 12.5,
-                  ),
-                ),
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 10,
+              vertical: 6,
+            ),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withOpacity(.08),
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: Text(
+              'Step ${index + 1}/$total',
+              style: TextStyle(
+                color: AppColors.primary,
+                fontWeight: FontWeight.w800,
+                fontSize: 12.5,
               ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Text(
-            item.title,
-            style: const TextStyle(
-              fontWeight: FontWeight.w800,
-              fontSize: 17,
-              height: 1.2,
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            item.text,
-            style: TextStyle(
-              height: 1.45,
-              color: Colors.black.withOpacity(.86),
-              fontWeight: FontWeight.w500,
-              fontSize: 15,
+          const SizedBox(height: 14),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(14),
+            child: AspectRatio(
+              aspectRatio: 4 / 3,
+              child: imageAsset.isEmpty
+                  ? const SizedBox.shrink()
+                  : Image.asset(
+                      imageAsset,
+                      fit: BoxFit.cover,
+                    ),
             ),
           ),
-          if (item.tip != null) ...[
-            const SizedBox(height: 12),
-            Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(.08),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.primary.withOpacity(.18)),
-              ),
-              child: Row(
+          const SizedBox(height: 16),
+          Expanded(
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(
-                    Icons.tips_and_updates_outlined,
-                    color: AppColors.primary,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      item.tip!,
-                      style: TextStyle(
-                        color: AppColors.primary,
-                        height: 1.35,
-                        fontWeight: FontWeight.w700,
-                      ),
+                  Text(
+                    item.title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 17,
+                      height: 1.2,
                     ),
                   ),
+                  const SizedBox(height: 10),
+                  Text(
+                    item.text,
+                    style: TextStyle(
+                      height: 1.45,
+                      color: Colors.black.withOpacity(.86),
+                      fontWeight: FontWeight.w500,
+                      fontSize: 15,
+                    ),
+                  ),
+                  if (item.tip != null) ...[
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withOpacity(.08),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: AppColors.primary.withOpacity(.18),
+                        ),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(
+                            Icons.tips_and_updates_outlined,
+                            color: AppColors.primary,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              item.tip!,
+                              style: TextStyle(
+                                color: AppColors.primary,
+                                height: 1.35,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
-          ],
+          ),
         ],
       ),
     );
