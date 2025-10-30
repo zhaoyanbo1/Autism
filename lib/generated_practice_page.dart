@@ -1,5 +1,4 @@
 // lib/generated_practice_page.dart
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'app_colors.dart';
 
@@ -18,16 +17,7 @@ class GeneratedPracticePage extends StatefulWidget {
 }
 
 class _GeneratedPracticePageState extends State<GeneratedPracticePage> {
-  final _pageCtrl = PageController();
   int _index = 0;
-
-  // 道具清单（可按需替换/扩展）
-  final List<String> _props = const [
-    'Two balls (big & small)',
-    'Two cups (big & small)',
-    'A soft toy (any size)',
-    'Paper towel roll',
-  ];
 
   // 步骤与道具呼应
   // 步骤与道具呼应 (7步流程)
@@ -35,39 +25,27 @@ class _GeneratedPracticePageState extends State<GeneratedPracticePage> {
     _StepItem(
       title: 'Set up',
       text:
-          'Place all props (balls, cups, toy, paper roll) on the table in mixed order. Keep one big/small pair visible.',
+          'Place all props (cups, toys, paper roll) on the table in mixed order. Keep one big/small pair visible.',
       tip: 'Say: “We will find BIG and SMALL today!”',
     ),
     _StepItem(
       title: 'Introduce',
       text:
-          'Show each object briefly. Point to one ball and say: “This is BIG.” Point to the other: “This is SMALL.”',
+          'Show each object briefly. Point to one cup and say: “This is BIG.” Point to the other: “This is SMALL.”',
       tip:
           'Use clear hand gestures: wide arms for BIG, pinch fingers for SMALL.',
     ),
     _StepItem(
       title: 'Model & label',
       text:
-          'Pick up the big ball and say “big ball”. Then the small ball: “small ball”. Repeat with cups or toys.',
+          'Pick up the big cup and say “big cup. Then the small cup: “small cup. Repeat with cups or toys.',
       tip: 'Encourage your child to echo your words.',
     ),
     _StepItem(
       title: 'Match pairs',
       text:
-          'Place the big ball and small ball together. Ask: “Which is BIG? Which is SMALL?” Do the same for cups.',
+          'Place the big cup and small cup together. Ask: “Which is BIG? Which is SMALL?” Do the same for toys.',
       tip: 'Wait for your child’s response before confirming.',
-    ),
-    _StepItem(
-      title: 'Sort items',
-      text:
-          'Ask your child to sort all props into two groups: BIG vs SMALL. Help only if needed.',
-      tip: 'Say: “Put all BIG things here, SMALL things there.”',
-    ),
-    _StepItem(
-      title: 'Practice turn-taking',
-      text:
-          'Take turns with your child: you pick one item and label it, then let them choose the next.',
-      tip: 'Cheer them on after each correct response.',
     ),
     _StepItem(
       title: 'Review & praise',
@@ -77,21 +55,10 @@ class _GeneratedPracticePageState extends State<GeneratedPracticePage> {
     ),
   ];
 
-  @override
-  void dispose() {
-    _pageCtrl.dispose();
-    super.dispose();
-  }
-
   void _go(int delta) {
-    final next = (_index + delta).clamp(0, _steps.length - 1);
-    if (next != _index) {
-      _pageCtrl.animateToPage(
-        next,
-        duration: const Duration(milliseconds: 250),
-        curve: Curves.easeOut,
-      );
-    }
+    setState(() {
+      _index = (_index + delta).clamp(0, _steps.length - 1);
+    });
   }
 
   @override
@@ -110,57 +77,45 @@ class _GeneratedPracticePageState extends State<GeneratedPracticePage> {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
         children: [
-          // 任务简介（含可选照片）
-          Container(
-            decoration: BoxDecoration(
-              color: AppColors.cardBlue.withOpacity(.5),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.primary.withOpacity(.15)),
-            ),
-            padding: const EdgeInsets.all(14),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _iconBadge(Icons.straighten),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Practice Goal',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w800,
-                          fontSize: 16,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'Help the child label and compare sizes using real objects '
-                        '(“big” vs “small”). Build comparative vocabulary and clear requests.',
-                        style: TextStyle(
-                          color: Colors.black.withOpacity(.80),
-                          height: 1.3,
-                        ),
-                      ),
-                      // if (widget.imagePath.isNotEmpty) ...[
-                      //   const SizedBox(height: 12),
-                      //   ClipRRect(
-                      //     borderRadius: BorderRadius.circular(12),
-                      //     child: Image.file(
-                      //       File(widget.imagePath),
-                      //       height: 140,
-                      //       width: double.infinity,
-                      //       fit: BoxFit.cover,
-                      //     ),
-                      //   ),
-                      // ],
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
+          // // 任务简介（含可选照片）
+          // Container(
+          //   decoration: BoxDecoration(
+          //     color: AppColors.cardBlue.withOpacity(.5),
+          //     borderRadius: BorderRadius.circular(16),
+          //     border: Border.all(color: AppColors.primary.withOpacity(.15)),
+          //   ),
+          //   padding: const EdgeInsets.all(14),
+          //   child: Row(
+          //     crossAxisAlignment: CrossAxisAlignment.start,
+          //     children: [
+          //       _iconBadge(Icons.straighten),
+          //       const SizedBox(width: 12),
+          //       Expanded(
+          //         child: Column(
+          //           crossAxisAlignment: CrossAxisAlignment.start,
+          //           children: [
+          //             const Text(
+          //               'Practice Goal',
+          //               style: TextStyle(
+          //                 fontWeight: FontWeight.w800,
+          //                 fontSize: 16,
+          //               ),
+          //             ),
+          //             const SizedBox(height: 6),
+          //             Text(
+          //               'Help the child label and compare sizes using real objects '
+          //               '(“big” vs “small”). Build comparative vocabulary and clear requests.',
+          //               style: TextStyle(
+          //                 color: Colors.black.withOpacity(.80),
+          //                 height: 1.3,
+          //               ),
+          //             ),
+          //           ],
+          //         ),
+          //       ),
+          //     ],
+          //   ),
+          // ),
 
           const SizedBox(height: 16),
 
@@ -182,33 +137,45 @@ class _GeneratedPracticePageState extends State<GeneratedPracticePage> {
 
           // —— Game steps —— //
           const SizedBox(height: 8),
-          _progressBar(_index, _steps.length, cs.primary), // 进度条更厚在函数里改
+          _progressBar(_index, _steps.length, AppColors.primary), // 进度条更厚在函数里改
           const SizedBox(height: 12),
 
-          SizedBox(
-            height: 240, // 从 180 提升到 240，留更多阅读空间
+          // 替换整块 SizedBox(...) 为：
+          AnimatedSize(
+            // 高度变化时平滑过渡（可选）
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOut,
             child: Stack(
+              clipBehavior: Clip.none,
               children: [
-                PageView.builder(
-                  controller: _pageCtrl,
-                  itemCount: _steps.length,
-                  onPageChanged: (i) => setState(() => _index = i),
-                  itemBuilder: (_, i) => _StepCard(
-                    item: _steps[i],
-                    index: i,
+                // 当前步骤卡，随内容自适应高度
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 200),
+                  transitionBuilder: (child, anim) =>
+                      FadeTransition(opacity: anim, child: child),
+                  child: _StepCard(
+                    key: ValueKey(_index), // 关键：让 AnimatedSwitcher 正确识别“新卡”
+                    item: _steps[_index],
+                    index: _index,
                     total: _steps.length,
                   ),
                 ),
-                Align(
-                  alignment: Alignment.centerLeft,
+
+                // 左右箭头（悬浮在卡片两侧）
+                Positioned(
+                  left: -6,
+                  top: 0,
+                  bottom: 0,
                   child: _arrowButton(
                     Icons.chevron_left,
                     onTap: () => _go(-1),
                     enabled: _index > 0,
                   ),
                 ),
-                Align(
-                  alignment: Alignment.centerRight,
+                Positioned(
+                  right: -6,
+                  top: 0,
+                  bottom: 0,
                   child: _arrowButton(
                     Icons.chevron_right,
                     onTap: () => _go(1),
@@ -220,26 +187,6 @@ class _GeneratedPracticePageState extends State<GeneratedPracticePage> {
           ),
 
           const SizedBox(height: 20),
-
-          // 道具清单
-          const Text(
-            'Props you’ll need',
-            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
-          ),
-          const SizedBox(height: 10),
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: AppColors.primary.withOpacity(.12)),
-            ),
-            padding: const EdgeInsets.symmetric(vertical: 6),
-            child: Column(
-              children: _props.map((p) => _propTile(p)).toList(growable: false),
-            ),
-          ),
-
-          const SizedBox(height: 18),
         ],
       ),
     );
@@ -258,32 +205,6 @@ class _GeneratedPracticePageState extends State<GeneratedPracticePage> {
       ),
       alignment: Alignment.center,
       child: Icon(icon, color: AppColors.primary),
-    );
-  }
-
-  Widget _propTile(String text) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF5F7FA),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.check_circle_outline,
-            color: AppColors.primary.withOpacity(.9),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              text,
-              style: const TextStyle(fontWeight: FontWeight.w600),
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -342,10 +263,11 @@ class _StepItem {
 
 class _StepCard extends StatelessWidget {
   const _StepCard({
+    super.key, // 👈 加上
     required this.item,
     required this.index,
     required this.total,
-  });
+  }); // 👈 传递给父类
 
   final _StepItem item;
   final int index;
@@ -405,7 +327,20 @@ class _StepCard extends StatelessWidget {
               height: 1.2,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
+
+          // 👉 中间的示例图片
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Image.asset(
+              'assets/images/steps/step${index + 1}.png',
+              width: double.infinity,
+              height: 300, // ✅ 限制最大高度
+              fit: BoxFit.contain, // ✅ 保持比例，自动缩放
+            ),
+          ),
+
+          const SizedBox(height: 12),
 
           // 正文更舒适的行距
           Text(

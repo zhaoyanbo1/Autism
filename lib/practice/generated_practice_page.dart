@@ -226,7 +226,7 @@ class _GeneratedPracticePageState extends State<GeneratedPracticePage> {
             _progressBar(_index, _steps.length, colorScheme.primary),
             const SizedBox(height: 12),
             SizedBox(
-              height: 300,
+              height: 600,
               child: Stack(
                 children: [
                   PageView.builder(

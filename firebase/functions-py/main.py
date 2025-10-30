@@ -50,9 +50,8 @@ def _create_instruction_image(client: OpenAI, plan_text: str) -> Optional[str]:
         result = client.images.generate(
             model="gpt-image-1",
             prompt=prompt,
-            size="512x512",
-            quality="standard",
-            style="vivid",
+            size="auto",
+            quality="auto",
         )
         if result and result.data:
             b64 = getattr(result.data[0], "b64_json", None)
