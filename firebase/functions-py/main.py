@@ -30,6 +30,41 @@ def _is_data_url(s: str) -> bool:
 
 def _mk_data_url_from_raw(raw: bytes, mime: str) -> str:
     return f"data:{mime};base64,{base64.b64encode(raw).decode()}"
+def _mk_prompt_for_image(plan_text: str) -> str:
+    # 画面重点在于将步骤转换成简单、易懂的卡通风格图示
+    condensed = plan_text.strip()
+    if len(condensed) > 800:
+        condensed = condensed[:800] + "…"
+    return (
+        "Create a simple, step-by-step instructional illustration for young children. "
+        "Use a cheerful cartoon style, bold outlines, and minimal text labels. "
+        "Highlight the key actions from this activity plan:\n"
+        f"{condensed}\n"
+        "The illustration should feel friendly and focus on the numbered steps."
+    )
+
+
+def _create_instruction_image(client: OpenAI, plan_text: str) -> Optional[str]:
+    try:
+        prompt = _mk_prompt_for_image(plan_text)
+        result = client.images.generate(
+            model="gpt-image-1",
+            prompt=prompt,
+            size="512x512",
+            quality="standard",
+            style="vivid",
+        )
+        if result and result.data:
+            b64 = getattr(result.data[0], "b64_json", None)
+            if b64:
+                return f"data:image/png;base64,{b64}"
+            print("[image] response missing b64_json payload", flush=True)
+        else:
+            print("[image] empty response payload", flush=True)
+    except Exception as exc:
+        print(f"[image] generation failed: {exc}", flush=True)
+    return None
+
 
 # ====== 核心：OpenAI 调用（带 Responses 优先 + Chat 回退） ======
 def call_openai(client: OpenAI, base_prompt: str, data_url: str) -> Optional[str]:
@@ -208,9 +243,15 @@ def generate_game(req: https_fn.Request) -> https_fn.Response:
                 mimetype="application/json",
                 status=502,
             )
+        illustration_url = _create_instruction_image(client, output_text)
 
         return https_fn.Response(
-            response=json.dumps({"result": output_text.strip()}),
+            response=json.dumps(
+                {
+                    "result": output_text.strip(),
+                    "illustration": illustration_url,
+                }
+            ),
             mimetype="application/json",
             status=200,
         )

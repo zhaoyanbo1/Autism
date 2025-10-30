@@ -126,6 +126,7 @@ class _PracticeIntroPageState extends State<PracticeIntroPage> {
 
       final payload = jsonDecode(response.body) as Map<String, dynamic>;
       final resultText = (payload['result'] as String?)?.trim();
+      final illustration = (payload['illustration'] as String?)?.trim();
       if (resultText == null || resultText.isEmpty) {
         throw const FormatException('Empty response from AI');
       }
@@ -147,6 +148,10 @@ class _PracticeIntroPageState extends State<PracticeIntroPage> {
                     'Generated Practice',
                 practiceGoal: widget.data['practiceGoal'] as String?,
                 rawResult: resultText,
+                resultIllustration:
+                illustration != null && illustration.isNotEmpty
+                    ? illustration
+                    : null,
               ),
         ),
       );

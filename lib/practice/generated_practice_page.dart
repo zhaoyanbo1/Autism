@@ -1,5 +1,6 @@
 import 'dart:io';
-
+import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
 import '../app_colors.dart';
@@ -11,12 +12,14 @@ class GeneratedPracticePage extends StatefulWidget {
     required this.rawResult,
     required this.practiceTitle,
     this.practiceGoal,
+    this.resultIllustration,
   });
 
   final String imagePath;
   final String rawResult;
   final String practiceTitle;
   final String? practiceGoal;
+  final String? resultIllustration;
 
   @override
   State<GeneratedPracticePage> createState() => _GeneratedPracticePageState();
@@ -28,6 +31,8 @@ class _GeneratedPracticePageState extends State<GeneratedPracticePage> {
 
   late final List<_StepItem> _steps;
   String? _bonusTip;
+  late final String? _illustrationUrl;
+  late final Uint8List? _illustrationBytes;
 
   @override
   void initState() {
@@ -51,6 +56,19 @@ class _GeneratedPracticePageState extends State<GeneratedPracticePage> {
 
     final bonus = parsed.bonusTip?.trim() ?? '';
     _bonusTip = bonus.isEmpty ? null : _markdownToPlainText(bonus);
+    final trimmedIllustration = widget.resultIllustration?.trim();
+    Uint8List? decodedBytes;
+    String? remoteUrl;
+
+    if (trimmedIllustration != null && trimmedIllustration.isNotEmpty) {
+      decodedBytes = _decodeDataUrl(trimmedIllustration);
+      if (decodedBytes == null && trimmedIllustration.startsWith('http')) {
+        remoteUrl = trimmedIllustration;
+      }
+    }
+
+    _illustrationBytes = decodedBytes;
+    _illustrationUrl = remoteUrl;
   }
 
   @override
@@ -208,7 +226,7 @@ class _GeneratedPracticePageState extends State<GeneratedPracticePage> {
             _progressBar(_index, _steps.length, colorScheme.primary),
             const SizedBox(height: 12),
             SizedBox(
-              height: 240,
+              height: 300,
               child: Stack(
                 children: [
                   PageView.builder(
@@ -247,6 +265,30 @@ class _GeneratedPracticePageState extends State<GeneratedPracticePage> {
             ),
           ],
 
+          if (_hasIllustration) ...[
+            const SizedBox(height: 200),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: AppColors.primary.withOpacity(.12)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(.05),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              padding: const EdgeInsets.all(12),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(14),
+                child: _buildIllustration(),
+              ),
+            ),
+          ],
+
+
           if (_bonusTip != null) ...[
             const SizedBox(height: 20),
             _bonusTipCard(_bonusTip!),
@@ -255,6 +297,52 @@ class _GeneratedPracticePageState extends State<GeneratedPracticePage> {
       ),
     );
   }
+  bool get _hasIllustration {
+    final hasBytes = _illustrationBytes != null && _illustrationBytes!.isNotEmpty;
+    final hasUrl = _illustrationUrl != null && _illustrationUrl!.isNotEmpty;
+    return hasBytes || hasUrl;
+  }
+
+  Widget _buildIllustration() {
+    if (_illustrationBytes != null && _illustrationBytes!.isNotEmpty) {
+      return Image.memory(
+        _illustrationBytes!,
+        height: 220,
+        width: double.infinity,
+        fit: BoxFit.cover,
+      );
+    }
+    if (_illustrationUrl != null && _illustrationUrl!.isNotEmpty) {
+      return Image.network(
+        _illustrationUrl!,
+        height: 220,
+        width: double.infinity,
+        fit: BoxFit.cover,
+      );
+    }
+    return const SizedBox.shrink();
+  }
+
+  Uint8List? _decodeDataUrl(String? dataUrl) {
+    final value = dataUrl?.trim();
+    if (value == null || value.isEmpty) {
+      return null;
+    }
+    final match = RegExp(
+      r'^data:image\/[^;]+;base64,(.*)$',
+      dotAll: true,
+    ).firstMatch(value);
+    final base64Data = match != null ? match.group(1) ?? '' : value;
+    if (base64Data.isEmpty) {
+      return null;
+    }
+    try {
+      return base64.decode(base64Data);
+    } catch (_) {
+      return null;
+    }
+  }
+
 
   Widget _bonusTipCard(String tip) {
     return Container(

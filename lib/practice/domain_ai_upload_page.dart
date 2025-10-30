@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -157,6 +158,7 @@ class _DomainAiUploadPageState extends State<DomainAiUploadPage> {
               mode: _mode,
               resultText: text,
               imagePath: _image!.path,
+              resultIllustration: (data['illustration'] as String?)?.trim(),
             ),
           ),
         );
@@ -508,12 +510,14 @@ class DomainGeneratedPracticePage extends StatelessWidget {
     required this.mode,
     required this.resultText,
     required this.imagePath,
+    this.resultIllustration,
   });
 
   final String displayName;
   final DomainGenerationMode mode;
   final String resultText;
   final String imagePath;
+  final String? resultIllustration;
 
   String get _modeLabel {
     switch (mode) {
@@ -528,6 +532,14 @@ class DomainGeneratedPracticePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final trimmedIllustration = resultIllustration?.trim();
+    final illustrationBytes = _decodeDataUrl(trimmedIllustration);
+    final illustrationUrl =
+    illustrationBytes == null && trimmedIllustration != null &&
+        trimmedIllustration.startsWith('http')
+        ? trimmedIllustration
+        : null;
+
     return Scaffold(
       appBar: AppBar(
         title: Text('$displayName Practice'),
@@ -593,11 +605,47 @@ class DomainGeneratedPracticePage extends StatelessWidget {
                   resultText,
                   style: const TextStyle(fontSize: 15, height: 1.4),
                 ),
+                if (illustrationBytes != null || illustrationUrl != null) ...[
+                  const SizedBox(height: 16),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(14),
+                    child: illustrationBytes != null
+                        ? Image.memory(
+                      illustrationBytes,
+                      height: 220,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                    )
+                        : Image.network(
+                      illustrationUrl!,
+                      height: 220,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
         ],
       ),
     );
+  }
+  Uint8List? _decodeDataUrl(String? dataUrl) {
+    final value = dataUrl?.trim();
+    if (value == null || value.isEmpty) {
+      return null;
+    }
+    final match =
+    RegExp(r'^data:image\/[^;]+;base64,(.*)$', dotAll: true).firstMatch(value);
+    final base64Data = match != null ? match.group(1) ?? '' : value;
+    if (base64Data.isEmpty) {
+      return null;
+    }
+    try {
+      return base64.decode(base64Data);
+    } catch (_) {
+      return null;
+    }
   }
 }
